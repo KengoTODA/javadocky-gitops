@@ -1,0 +1,33 @@
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    environment: production
+    env:
+      IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_APP_NAME }}
+    steps:
+      - uses: google-github-actions/auth@v0
+        with:
+          workload_identity_provider: projects/905134421768/locations/global/workloadIdentityPools/actions-javadocky/providers/actions-javadocky
+          service_account: ${{ secrets.GCP_EMAIL }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+      - uses: google-github-actions/setup-gcloud@v0
+      - uses: 'google-github-actions/get-gke-credentials@v0'
+        with:
+          cluster_name: ${{ secrets.GCP_APP_NAME }}
+          location: 'asia-east2'
+      # The KUBECONFIG env var is automatically exported and picked up by kubectl.
+      - run: |
+          gcloud auth configure-docker
+          docker pull $IMAGE_NAME:latest
+          kubectl get pods
