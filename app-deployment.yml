@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+  labels:
+    app: javadocky
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: javadocky
+  template:
+    metadata:
+      labels:
+        app: javadocky
+    spec:
+      containers:
+      - name: javadocky
+        image: gcr.io/javadocky/javadocky:latest
+        ports:
+        - containerPort: 8080
